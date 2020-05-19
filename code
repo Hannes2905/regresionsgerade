@@ -1,0 +1,201 @@
+from tkinter import *
+import matplotlib.pyplot as plt
+import numpy as np
+
+
+main=Tk()
+
+a=1
+n=0
+
+
+f=open("punkte.txt","w")
+canvas_width=500
+canvas_height=500
+canvas=Canvas(main,width=canvas_width,height=canvas_height)
+canvas.create_line(0,canvas_width/2,canvas_height,canvas_height/2)
+canvas.create_line(canvas_height/2,0,canvas_height/2,canvas_height)
+canvas.create_line(245,200,255,200)
+canvas.create_line(245,150,255,150)
+canvas.create_line(245,100,255,100)
+canvas.create_line(245,50,255,50)
+canvas.create_line(245,300,255,300)
+canvas.create_line(245,350,255,350)
+canvas.create_line(245,400,255,400)
+canvas.create_line(245,450,255,450)
+canvas.create_line(245,500,255,500)
+canvas.create_line(50,245,50,255)
+canvas.create_line(100,245,100,255)
+canvas.create_line(150,245,150,255)
+canvas.create_line(200,245,200,255)
+canvas.create_line(300,245,300,255)
+canvas.create_line(350,245,350,255)
+canvas.create_line(400,245,400,255)
+canvas.create_line(450,245,450,255)
+canvas.create_line(250,2,245,10)
+canvas.create_line(250,2,255,10)
+canvas.create_line(500,250,493,245)
+canvas.create_line(500,250,493,255)
+canvas.create_text(300,261,text="5")
+canvas.create_text(350,261,text="10")
+canvas.create_text(400,261,text="15")
+canvas.create_text(450,261,text="20")
+canvas.create_text(200,261,text="-5")
+canvas.create_text(150,261,text="-10")
+canvas.create_text(100,261,text="-15")
+canvas.create_text(50,261,text="-20")
+canvas.create_text(265,200,text="5")
+canvas.create_text(265,150,text="10")
+canvas.create_text(265,100,text="15")
+canvas.create_text(265,50,text="20")
+canvas.create_text(265,300,text="-5")
+canvas.create_text(265,350,text="-10")
+canvas.create_text(265,400,text="-15")
+canvas.create_text(265,450,text="-20")
+canvas.pack()
+
+
+def motion(event):
+       global label_x
+       global label_y
+
+
+       label_x.destroy()
+       label_y.destroy()
+       x="x="+str((event.x-250)/(10))
+       y="y="+str((event.y-250)/(-10))
+       label_x=Label(main,text=x)
+       label_y=Label(main,text=y)
+       label_x.pack()
+       label_y.pack()
+
+
+label_x=Label(main,text="x=0")
+label_y=Label(main,text="y=0")
+label_x.pack()
+label_y.pack()
+main.bind("<Motion>",motion)
+
+
+def click(event):
+       global a
+       global n
+
+       if event.y<=500:
+              canvas.create_oval(event.x - 3, event.y - 3, event.x + 3, event.y + 3, fill="black")
+              coordinates = "(x=" + str((event.x - 250) / (10)) + ";y=" + str((event.y - 250) / (-10)) + ")"
+              punkt_text = "Punkt " + str(a) + " : " + coordinates
+              canvas.create_text(event.x, event.y + 10, font=("Pursia", 7), text=coordinates)
+              punkt = Label(main, text=punkt_text)
+              punkt.pack()
+              a += 1
+              textfile=str((event.x - 250) / (10))+";"+str((event.y - 250) / (-10))
+              f.write(textfile+"\n")
+              n+=1
+
+
+
+main.bind("<Button-3>",click)
+def end():
+       global n
+
+
+       main.destroy()
+       f.write(str(n))
+       f.close()
+       werte = open("punkte.txt", "r")
+       werte = list(werte)
+       lenght = len(werte)
+       n = int(werte[lenght - 1])
+       xges = 0
+       yges = 0
+       for i in werte:
+              if werte.index(i) == n:
+                     break
+              index = i.index(";")
+              x = ""
+              for p in range(0, index):
+                     x += i[p]
+              x = float(x)
+              xges += x
+              laenge = len(i)
+              y = ""
+              for c in range(index + 1, laenge):
+                     y += i[c]
+              y = float(y)
+              yges += y
+
+       x_ = xges / n
+       y_ = yges / n
+
+       a_oben = 0
+       a_unten = 0
+
+       for q in range(0, n):
+              spalte_oben = werte[q]
+              index = spalte_oben.index(";")
+              x = ""
+              for w in range(0, index):
+                     x += spalte_oben[w]
+              x = float(x)
+              y = ""
+              for e in range(index + 1, len(spalte_oben)):
+                     y += spalte_oben[e]
+              y = float(y)
+              ersterwert = (x - x_)
+              zweiterwert = (y - y_)
+              a_oben += (ersterwert * zweiterwert)
+
+       for t in range(0, n):
+              spalte_unten = werte[t]
+              index = spalte_unten.index(";")
+              x = ""
+              for w in range(0, index):
+                     x += spalte_unten[w]
+              x = float(x)
+              klammer = (x - x_) * (x - x_)
+              a_unten += klammer
+       a = a_oben / a_unten
+       b = y_ - a * x_
+
+
+       x = np.linspace(-25, 25, 100)
+
+
+       y = x * a + (b)
+
+
+       fig = plt.figure()
+       ax = fig.add_subplot(1, 1, 1)
+       ax.spines['left'].set_position('center')
+       ax.spines['bottom'].set_position('zero')
+       ax.spines['right'].set_color('none')
+       ax.spines['top'].set_color('none')
+       ax.yaxis.set_ticks_position('left')
+       ax.xaxis.set_ticks_position('bottom')
+
+
+       plt.plot(x, y, 'r')
+       werte = open("punkte.txt", "r")
+       werte = list(werte)
+       lenght = len(werte)
+       n = int(werte[lenght - 1])
+       for i in range(0, n):
+              spalte = werte[i]
+              index = spalte.index(";")
+              x = ""
+              for i in range(0, index):
+                     x += spalte[i]
+              x = float(x)
+              y = ""
+              for i in range(index + 1, len(spalte)):
+                     y += spalte[i]
+              y = float(y)
+              plt.plot(x, y, "bo")
+
+
+       plt.show()
+
+end=Button(main,text="send",command=end)
+end.pack()
+main.mainloop()
